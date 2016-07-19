@@ -1,0 +1,55 @@
+{
+    "name": "live-html-previewer",
+    "displayName": "Live HTML Previewer",
+    "description": "Edit and preview HTML documents in VS Code",
+    "version": "0.0.1",
+    "publisher": "hdg",
+    "engines": {
+        "vscode": "^1.0.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "workspaceContains:*.html",
+        "workspaceContains:*.htm",
+        "onCommand:extension.sidePreview",
+        "onCommand:extension.fullPreview"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.sidePreview",
+                "title": "Show side preview"
+            },
+            {
+                "command": "extension.fullPreview",
+                "title": "Show full preview"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "extension.sidePreview",
+                "key": "ctrl+q y",
+                "mac": "cmd+q y",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.fullPreview",
+                "key": "ctrl+q t",
+                "mac": "cmd+q t",
+                "when": "editorTextFocus"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+    "devDependencies": {
+        "typescript": "^1.8.5",
+        "vscode": "^0.11.0"
+    }
+}
