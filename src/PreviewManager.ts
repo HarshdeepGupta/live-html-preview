@@ -2,6 +2,7 @@
 import * as vscode from 'vscode'
 import HTMLDocumentContentProvider from './HTMLDocumentContentProvider'
 import Utilities from './Utilities'
+import StatusBarItem from './StatusBarItem'
 import * as Constants from './Constants'
 
 
@@ -11,11 +12,12 @@ export default class PreviewManager {
     htmlDocumentContentProvider: HTMLDocumentContentProvider;
     disposable: vscode.Disposable;
     utilities: Utilities;
+    statusBarItem: StatusBarItem;
 
     constructor(utilities?: Utilities, htmlDocumentContentProvider?: HTMLDocumentContentProvider) {
         this.utilities = utilities && utilities || new Utilities();
         this.htmlDocumentContentProvider = htmlDocumentContentProvider && htmlDocumentContentProvider || new HTMLDocumentContentProvider();
-        this.htmlDocumentContentProvider.generatePreview();
+        this.htmlDocumentContentProvider.generateHTML();
         // subscribe to selection change event
         let subscriptions: vscode.Disposable[] = [];
         vscode.window.onDidChangeTextEditorSelection(this.onEvent, this, subscriptions)
@@ -26,8 +28,26 @@ export default class PreviewManager {
         this.disposable.dispose();
     }
 
-    public onEvent() {
+    private onEvent() {
         this.htmlDocumentContentProvider.update(vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI));
+        // this.updatePreviewStatus();
+        // console.log(Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN);
     }
+
+    // updatePreviewStatus() {
+    //     let visibleEditors = vscode.window.visibleTextEditors;
+    //     console.log(visibleEditors)
+    //     for (let editor of visibleEditors) {
+    //         console.log(editor.document.uri);
+    //         console.log(vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI));
+    //         if (editor.document.uri === vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI)) {
+    //             Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN = true;
+    //             return;
+    //         }
+    //     }
+    //     Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN = false;
+    // }
+
+
 
 }

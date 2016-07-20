@@ -4,17 +4,31 @@
     "description": "Edit and preview HTML documents in VS Code",
     "version": "0.0.1",
     "publisher": "hdg",
+    "author": "Harshdeep Gupta",
     "engines": {
         "vscode": "^1.0.0"
     },
     "categories": [
         "Other"
     ],
+    "keywords": [
+        "html","css","preview","vscode"
+    ],
+    "galleryBanner": {
+        "color": "#2E0854",
+        "theme": "dark"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HarshdeepGupta/live-html-preview.git"
+    },
+    "bugs": {
+        "url": "https://github.com/HarshdeepGupta/live-html-preview/issues"
+    },
+    "license": "MIT",
+    "icon":"Resources/Images/icon.png",
     "activationEvents": [
-        "workspaceContains:*.html",
-        "workspaceContains:*.htm",
-        "onCommand:extension.sidePreview",
-        "onCommand:extension.fullPreview"
+        "onLanguage:html"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -26,19 +40,45 @@
             {
                 "command": "extension.fullPreview",
                 "title": "Show full preview"
+            },
+            {
+                "command": "extension.inBrowser",
+                "title": "Open in browser"
             }
         ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "when": "resourceLangId == html",
+                    "command": "extension.inBrowser",
+                    "group": "navigation"
+                }
+            ],
+            "editor/context": [
+                {
+                    "when": "resourceLangId == html",
+                    "command": "extension.inBrowser",
+                    "group": "navigation"
+                }
+            ]
+        },
         "keybindings": [
             {
                 "command": "extension.sidePreview",
-                "key": "ctrl+q y",
-                "mac": "cmd+q y",
+                "key": "ctrl+q s",
+                "mac": "cmd+q s",
                 "when": "editorTextFocus"
             },
             {
                 "command": "extension.fullPreview",
-                "key": "ctrl+q t",
-                "mac": "cmd+q t",
+                "key": "ctrl+q f",
+                "mac": "cmd+q f",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.inBrowser",
+                "key": "ctrl+q w",
+                "mac": "cmd+q w",
                 "when": "editorTextFocus"
             }
         ]
@@ -51,5 +91,9 @@
     "devDependencies": {
         "typescript": "^1.8.5",
         "vscode": "^0.11.0"
+    },
+    "dependencies": {
+        "opn": "^4.0.2",
+        "path": "^0.12.7"
     }
 }

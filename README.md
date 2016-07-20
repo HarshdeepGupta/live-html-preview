@@ -1,13 +1,17 @@
-# README
-## This is the README for your extension "live-html-previewer"
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+# Live HTML Previewer
+This extension allows you to preview your html files in VS Code itself. Use it to quickly set the html and css right for your webpages.
+##### Note: Javascript is not supported in preview
+### Features
+#### Side preview with live editing
+![IDE](Resources/Images/SidePreview.gif)
+#### Full page preview
+#### Open html file in browser
+### Usage
+* For side preview, use the keybinding 'ctrl+q s' or press 'F1' and type "Show side preview"
+* For full preview, use the keybinding 'ctrl+q f' or press 'F1' and type "Show full preview"
+* To open file in browser: 
+    * use the keybinding 'ctrl+q w' or
+    * press 'F1' and type "Open in browser" or
+    * right click in the editor/side bar, select "Open in browser"
 
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+If a HTML file is open, a message is displayed on the Stautus Bar in bottom left. Click on it for side preview.

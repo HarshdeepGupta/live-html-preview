@@ -1,0 +1,17 @@
+* {
+    color: inherit;
+    background: inherit;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+html,
+body {
+    background: #fff;
+    color: #000;
+}
+
+img {
+    max-width: inherit;
+    max-height: inherit;
+}
