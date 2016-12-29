@@ -11,6 +11,4 @@ export module ExtensionConstants{
     export const STATUS_BAR_TEXT = "Preview Available";
     export const STATUS_BAR_TOOLTIP = "Click for Side Preview";
     export const EXTENSION_ID = "hdg.live-html-previewer";
-    export const CUSTOM_CSS_PATH = "Resources/custom_style.css"
-    
 }
