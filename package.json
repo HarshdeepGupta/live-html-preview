@@ -2,7 +2,7 @@
     "name": "live-html-previewer",
     "displayName": "Live HTML Previewer",
     "description": "Edit and preview HTML documents in VS Code",
-    "version": "0.0.1",
+    "version": "0.2.0",
     "publisher": "hdg",
     "author": "Harshdeep Gupta",
     "engines": {
@@ -12,7 +12,10 @@
         "Other"
     ],
     "keywords": [
-        "html","css","preview","vscode"
+        "html",
+        "css",
+        "preview",
+        "vscode"
     ],
     "galleryBanner": {
         "color": "#2E0854",
@@ -26,7 +29,7 @@
         "url": "https://github.com/HarshdeepGupta/live-html-preview/issues"
     },
     "license": "MIT",
-    "icon":"Resources/Images/icon.png",
+    "icon": "Resources/Images/icon.png",
     "activationEvents": [
         "onLanguage:html"
     ],

@@ -14,4 +14,4 @@ This extension allows you to preview your html files in VS Code itself. Use it t
     * press 'F1' and type "Open in browser" or
     * right click in the editor/side bar, select "Open in browser"
 
-If a HTML file is open, a message is displayed on the Stautus Bar in bottom left. Click on it for side preview.
+If a HTML file is open, a message is displayed on the Status Bar in bottom left. Click on it for side preview.

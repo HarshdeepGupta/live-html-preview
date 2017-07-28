@@ -1,6 +1,6 @@
 "use strict"
 import * as vscode from 'vscode';
-import PreviewManager from './previewManager'
+import PreviewManager from './PreviewManager'
 import * as Constants from './Constants'
 
 export default class Utilities {
