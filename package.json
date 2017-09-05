@@ -66,19 +66,19 @@
             {
                 "command": "extension.sidePreview",
                 "key": "ctrl+q s",
-                "mac": "cmd+q s",
+                "mac": "ctrl+q s",
                 "when": "editorTextFocus"
             },
             {
                 "command": "extension.fullPreview",
                 "key": "ctrl+q f",
-                "mac": "cmd+q f",
+                "mac": "ctrl+q f",
                 "when": "editorTextFocus"
             },
             {
                 "command": "extension.inBrowser",
                 "key": "ctrl+q w",
-                "mac": "cmd+q w",
+                "mac": "ctrl+q w",
                 "when": "editorTextFocus"
             }
         ]
