@@ -9,6 +9,7 @@ import * as Constants from './Constants'
 export default class HTMLDocumentContentProvider implements vscode.TextDocumentContentProvider {
 
     private _onDidChange: vscode.EventEmitter<vscode.Uri>;
+    private _textEditor: vscode.TextEditor;
 
 
     constructor() {
