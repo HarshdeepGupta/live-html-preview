@@ -22,7 +22,8 @@ export default class HTMLDocumentContentProvider implements vscode.TextDocumentC
     public generateHTML(): string {
         let plainText: string = vscode.window.activeTextEditor.document.getText();
         let html = this.fixLinks(plainText);
-        return html;
+        let htmlWithStyle = this.addStyles(html);
+        return htmlWithStyle;
     }
 
     // Thanks to Thomas Haakon Townsend for coming up with this regex
@@ -41,11 +42,26 @@ export default class HTMLDocumentContentProvider implements vscode.TextDocumentC
                 ].join("");
             }
         );
+
+
+
     }
+
 
     public update(uri: vscode.Uri) {
         this._onDidChange.fire(uri);
     }
+
+
+    // Add styles to the current HTML so that it is displayed corectly in VS Code
+    private addStyles(html: string): string {
+        let extensionPath = vscode.extensions.getExtension(Constants.ExtensionConstants.EXTENSION_ID).extensionPath;
+        let style_path = vscode.Uri.file(`${extensionPath}/${Constants.ExtensionConstants.CUSTOM_CSS_PATH}`);
+        let styles: string = `<link href="${style_path}" rel="stylesheet" />`;
+        return html + styles;
+    }
+
+
 
     get onDidChange(): vscode.Event<vscode.Uri> {
         return this._onDidChange.event;
