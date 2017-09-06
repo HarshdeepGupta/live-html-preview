@@ -13,6 +13,7 @@ export default class HTMLDocumentContentProvider implements vscode.TextDocumentC
 
     constructor() {
         this._onDidChange = new vscode.EventEmitter<vscode.Uri>();
+        this._textEditor = vscode.window.activeTextEditor;
     }
 
     provideTextDocumentContent(uri: vscode.Uri): string {
@@ -20,7 +21,7 @@ export default class HTMLDocumentContentProvider implements vscode.TextDocumentC
     };
 
     public generateHTML(): string {
-        let plainText: string = vscode.window.activeTextEditor.document.getText();
+        let plainText: string = this._textEditor.document.getText();
         let html = this.fixLinks(plainText);
         let htmlWithStyle = this.addStyles(html);
         return htmlWithStyle;
@@ -28,7 +29,7 @@ export default class HTMLDocumentContentProvider implements vscode.TextDocumentC
 
     // Thanks to Thomas Haakon Townsend for coming up with this regex
     private fixLinks(html: string): string {
-        let documentFileName = vscode.window.activeTextEditor.document.fileName;
+        let documentFileName = this._textEditor.document.fileName;
         return html.replace(
             new RegExp("((?:src|href)=[\'\"])((?!http|\\/).*?)([\'\"])", "gmi"),
             (subString: string, p1: string, p2: string, p3: string): string => {
