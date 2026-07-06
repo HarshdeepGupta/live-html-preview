@@ -1,53 +1,61 @@
 'use strict'
 import * as vscode from 'vscode'
 import HTMLDocumentContentProvider from './HTMLDocumentContentProvider'
-import Utilities from './Utilities'
-import StatusBarItem from './StatusBarItem'
 import * as Constants from './Constants'
+import * as PreviewTheme from './PreviewTheme'
 
-
-// This class initializes the previewmanager based on extension type and manages all the subscriptions
 export default class PreviewManager {
 
-    htmlDocumentContentProvider: HTMLDocumentContentProvider;
-    disposable: vscode.Disposable;
-    utilities: Utilities;
-    statusBarItem: StatusBarItem;
+    private _panel: vscode.WebviewPanel;
+    private _htmlProvider: HTMLDocumentContentProvider;
+    private _disposables: vscode.Disposable[] = [];
+    private _debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
-    constructor(utilities?: Utilities, htmlDocumentContentProvider?: HTMLDocumentContentProvider) {
-        this.utilities = utilities && utilities || new Utilities();
-        this.htmlDocumentContentProvider = htmlDocumentContentProvider && htmlDocumentContentProvider || new HTMLDocumentContentProvider();
-        this.htmlDocumentContentProvider.generateHTML();
-        // subscribe to selection change event
-        let subscriptions: vscode.Disposable[] = [];
-        vscode.window.onDidChangeTextEditorSelection(this.onEvent, this, subscriptions)
-        this.disposable = vscode.Disposable.from(...subscriptions);
+    constructor(panel: vscode.WebviewPanel, document: vscode.TextDocument) {
+        this._panel = panel;
+        this._htmlProvider = new HTMLDocumentContentProvider(document, panel.webview);
+
+        this.updatePreview();
+
+        this._disposables.push(
+            vscode.workspace.onDidChangeTextDocument((e) => {
+                if (e.document === document) {
+                    this.scheduleUpdate();
+                }
+            })
+        );
+
+        // Theme/custom-CSS changes are a deliberate, discrete action (not typing),
+        // so re-render immediately rather than debouncing - otherwise an already-open
+        // preview would keep showing the old theme until the next document edit.
+        this._disposables.push(
+            vscode.workspace.onDidChangeConfiguration((e) => {
+                if (PreviewTheme.isThemeChange(e) ||
+                    e.affectsConfiguration(`${Constants.Configuration.SECTION}.${Constants.Configuration.CUSTOM_CSS_ENABLED}`) ||
+                    e.affectsConfiguration(`${Constants.Configuration.SECTION}.${Constants.Configuration.CUSTOM_CSS_PATH}`)) {
+                    this.updatePreview();
+                }
+            })
+        );
+
+        panel.onDidDispose(() => this.dispose());
+    }
+
+    private scheduleUpdate() {
+        if (this._debounceTimer) { clearTimeout(this._debounceTimer); }
+        const delay = vscode.workspace
+            .getConfiguration(Constants.Configuration.SECTION)
+            .get<number>(Constants.Configuration.DEBOUNCE_DELAY, Constants.Configuration.DEBOUNCE_DELAY_DEFAULT);
+        this._debounceTimer = setTimeout(() => this.updatePreview(), delay);
+    }
+
+    private updatePreview() {
+        this._panel.webview.html = this._htmlProvider.generateHTML();
     }
 
     dispose() {
-        this.disposable.dispose();
+        if (this._debounceTimer) { clearTimeout(this._debounceTimer); }
+        this._disposables.forEach(d => d.dispose());
+        this._disposables = [];
     }
-
-    private onEvent() {
-        this.htmlDocumentContentProvider.update(vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI));
-        // this.updatePreviewStatus();
-        // console.log(Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN);
-    }
-
-    // updatePreviewStatus() {
-    //     let visibleEditors = vscode.window.visibleTextEditors;
-    //     console.log(visibleEditors)
-    //     for (let editor of visibleEditors) {
-    //         console.log(editor.document.uri);
-    //         console.log(vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI));
-    //         if (editor.document.uri === vscode.Uri.parse(Constants.ExtensionConstants.PREVIEW_URI)) {
-    //             Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN = true;
-    //             return;
-    //         }
-    //     }
-    //     Constants.SessionVariables.IS_PREVIEW_BEING_SHOWN = false;
-    // }
-
-
-
 }

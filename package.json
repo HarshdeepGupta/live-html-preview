@@ -2,11 +2,11 @@
     "name": "live-html-previewer",
     "displayName": "Live HTML Previewer",
     "description": "Edit and preview HTML documents in VS Code",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "publisher": "hdg",
     "author": "Harshdeep Gupta",
     "engines": {
-        "vscode": "^1.0.0"
+        "vscode": "^1.73.0"
     },
     "categories": [
         "Other"
@@ -33,36 +33,115 @@
     "activationEvents": [
         "onLanguage:html"
     ],
-    "main": "./out/src/extension",
+    "main": "./dist/extension.js",
+    "capabilities": {
+        "untrustedWorkspaces": {
+            "supported": true
+        }
+    },
     "contributes": {
         "commands": [
             {
                 "command": "extension.sidePreview",
-                "title": "Show side preview"
+                "category": "Live HTML Preview",
+                "title": "Show side preview",
+                "icon": "$(open-preview)"
             },
             {
                 "command": "extension.fullPreview",
+                "category": "Live HTML Preview",
                 "title": "Show full preview"
             },
             {
                 "command": "extension.inBrowser",
+                "category": "Live HTML Preview",
                 "title": "Open in browser"
+            },
+            {
+                "command": "extension.setPreviewTheme",
+                "category": "Live HTML Preview",
+                "title": "Set preview theme"
+            },
+            {
+                "command": "extension.cyclePreviewTheme",
+                "category": "Live HTML Preview",
+                "title": "Cycle preview theme (Auto/Light/Dark)",
+                "icon": "$(color-mode)"
+            },
+            {
+                "command": "extension.sidePreviewAuto",
+                "category": "Live HTML Preview",
+                "title": "Side Preview (Auto)"
+            },
+            {
+                "command": "extension.sidePreviewLight",
+                "category": "Live HTML Preview",
+                "title": "Side Preview (Light)"
+            },
+            {
+                "command": "extension.sidePreviewDark",
+                "category": "Live HTML Preview",
+                "title": "Side Preview (Dark)"
+            },
+            {
+                "command": "extension.fullPreviewAuto",
+                "category": "Live HTML Preview",
+                "title": "Full Preview (Auto)"
+            },
+            {
+                "command": "extension.fullPreviewLight",
+                "category": "Live HTML Preview",
+                "title": "Full Preview (Light)"
+            },
+            {
+                "command": "extension.fullPreviewDark",
+                "category": "Live HTML Preview",
+                "title": "Full Preview (Dark)"
+            }
+        ],
+        "submenus": [
+            {
+                "id": "liveHtmlPreview.previewSubmenu",
+                "label": "Preview"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
                     "when": "resourceLangId == html",
-                    "command": "extension.inBrowser",
+                    "submenu": "liveHtmlPreview.previewSubmenu",
                     "group": "navigation"
                 }
             ],
             "editor/context": [
                 {
                     "when": "resourceLangId == html",
-                    "command": "extension.inBrowser",
+                    "submenu": "liveHtmlPreview.previewSubmenu",
                     "group": "navigation"
                 }
+            ],
+            "editor/title": [
+                {
+                    "when": "resourceLangId == html",
+                    "command": "extension.sidePreview",
+                    "alt": "extension.fullPreview",
+                    "group": "navigation@1"
+                },
+                {
+                    "when": "activeWebviewPanelId == 'liveHtmlPreview' || activeCustomEditorId == 'liveHtmlPreview.editor'",
+                    "command": "extension.cyclePreviewTheme",
+                    "alt": "extension.setPreviewTheme",
+                    "group": "navigation@2"
+                }
+            ],
+            "liveHtmlPreview.previewSubmenu": [
+                { "command": "extension.sidePreviewAuto", "group": "1_side" },
+                { "command": "extension.sidePreviewLight", "group": "1_side" },
+                { "command": "extension.sidePreviewDark", "group": "1_side" },
+                { "command": "extension.fullPreviewAuto", "group": "2_full" },
+                { "command": "extension.fullPreviewLight", "group": "2_full" },
+                { "command": "extension.fullPreviewDark", "group": "2_full" },
+                { "command": "extension.inBrowser", "group": "3_browser" }
             ]
         },
         "keybindings": [
@@ -83,20 +162,74 @@
                 "key": "ctrl+q w",
                 "mac": "ctrl+q w",
                 "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.cyclePreviewTheme",
+                "key": "ctrl+q t",
+                "mac": "ctrl+q t",
+                "when": "editorTextFocus"
             }
-        ]
+        ],
+        "customEditors": [
+            {
+                "viewType": "liveHtmlPreview.editor",
+                "displayName": "Live HTML Preview",
+                "selector": [
+                    {
+                        "filenamePattern": "*.html"
+                    }
+                ],
+                "priority": "option"
+            }
+        ],
+        "configuration": {
+            "title": "Live HTML Preview",
+            "properties": {
+                "liveHtmlPreview.debounceDelay": {
+                    "type": "number",
+                    "default": 200,
+                    "minimum": 0,
+                    "maximum": 2000,
+                    "description": "Delay (ms) after an edit before the preview refreshes."
+                },
+                "liveHtmlPreview.customCss.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Inject a stylesheet into the preview (the bundled default, or a custom one via liveHtmlPreview.customCss.path)."
+                },
+                "liveHtmlPreview.customCss.path": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Workspace-relative path to a custom CSS file to use in the preview instead of the bundled default. Ignored if empty or if customCss.enabled is false."
+                },
+                "liveHtmlPreview.previewTheme": {
+                    "type": "string",
+                    "enum": ["auto", "light", "dark"],
+                    "enumDescriptions": [
+                        "Show the page exactly as authored - its own styles (including any dark-mode CSS) win, like a real browser.",
+                        "Force a plain white background and black text, regardless of the page's own styling.",
+                        "Force a plain black background and white text, regardless of the page's own styling."
+                    ],
+                    "default": "auto",
+                    "description": "Controls the preview's background/text color. Can also be changed via the 'Live HTML Preview: Set preview theme' command."
+                }
+            }
+        }
     },
     "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && node esbuild.js",
+        "check-types": "tsc --noEmit",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && node esbuild.js --production"
     },
     "devDependencies": {
-        "typescript": "^1.8.5",
-        "vscode": "^0.11.0"
-    },
-    "dependencies": {
-        "opn": "^4.0.2",
-        "path": "^0.12.7"
+        "@types/vscode": "^1.73.0",
+        "@types/node": "^16.0.0",
+        "typescript": "^5.0.0",
+        "esbuild": "^0.28.0",
+        "npm-run-all": "^4.1.5"
     }
 }

@@ -1,13 +1,16 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
+        "target": "es2020",
+        "lib": ["es2020"],
         "outDir": "out",
-        "noLib": true,
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "strict": true
     },
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "out",
+        "test"
     ]
 }

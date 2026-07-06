@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live HTML Preview - Manual Test Page</title>
+    <style>
+        body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; line-height: 1.5; }
+        .icon { width: 48px; height: 48px; vertical-align: middle; }
+        .check { padding: 0.75rem 1rem; margin: 0.5rem 0; border-left: 4px solid #999; background: #f4f4f4; }
+        #js-marker { color: #c00; font-weight: bold; }
+
+        /* This page defines its own dark mode, same as a real site might. */
+        @media (prefers-color-scheme: dark) {
+            body { background: #1e1e1e; color: #ddd; }
+            .check { background: #2a2a2a; border-left-color: #666; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Live HTML Preview - Manual Test Page</h1>
+
+    <div class="check">
+        <strong>1. Relative image asset:</strong> the extension icon below is loaded via a
+        relative <code>src</code> path (<code>Resources/Images/icon.png</code>). It should
+        render, not show a broken-image icon &mdash; this exercises the
+        <code>asWebviewUri</code> rewriting.
+        <br>
+        <img class="icon" src="Resources/Images/icon.png" alt="extension icon">
+    </div>
+
+    <div class="check">
+        <strong>2. Live editing / debounce:</strong> with this file open in a side/full
+        preview, edit this sentence in the editor and confirm the preview updates roughly
+        <code>liveHtmlPreview.debounceDelay</code> (default 200ms) after you stop typing,
+        not on every keystroke.
+    </div>
+
+    <div class="check">
+        <strong>3. Scripts should be disabled:</strong> the line below is set by a
+        <code>&lt;script&gt;</code> tag. If it still says "script did NOT run", scripts are
+        correctly disabled in the preview (expected, current behavior).
+        <br>
+        <span id="js-marker">script did NOT run</span>
+    </div>
+
+    <div class="check">
+        <strong>4. External link untouched:</strong>
+        <a href="https://code.visualstudio.com">https://code.visualstudio.com</a>
+        should be left as a normal absolute URL (not rewritten).
+    </div>
+
+    <div class="check">
+        <strong>5. Custom CSS injection:</strong> this page includes its own
+        <code>&lt;style&gt;</code> block above, and the extension additionally appends its
+        own stylesheet link (bundled, or your <code>liveHtmlPreview.customCss.path</code> if
+        set) after the body. Check the preview's rendered HTML/styling looks intentional.
+    </div>
+
+    <div class="check">
+        <strong>6. Preview theme:</strong> this page defines its own
+        <code>prefers-color-scheme: dark</code> styling above. With
+        <code>liveHtmlPreview.previewTheme</code> set to <code>auto</code> (default), the
+        preview should follow your OS/webview color scheme like a real browser would, not be
+        forced to white.
+        <br><br>
+        Try all these ways to switch it, and confirm they all agree on the current mode:
+        <ul>
+            <li>open a side/full preview, then click the theme icon in the <em>preview tab's own</em> toolbar to cycle; alt-click it to pick from a list (this icon should NOT appear on this source file's own tab anymore)</li>
+            <li>click the theme item in the Status Bar (bottom left) to cycle - it should stay visible and correct whether this source tab or the preview tab is focused</li>
+            <li>press 'ctrl+q t' while editing this file to cycle</li>
+            <li>right-click this page (in the editor or Explorer) &rarr; "Preview" &mdash; pick "Side Preview (Dark)" or similar and confirm it opens (or re-themes an already-open) preview directly in that mode</li>
+            <li>run "Live HTML Preview: Set preview theme" from the Command Palette</li>
+        </ul>
+        Changing it from any one of these should update the preview tab's icon tooltip and the
+        Status Bar text immediately, including re-rendering an already-open preview without needing
+        an edit - and Light/Dark should force a plain background regardless of this page's own
+        dark-mode CSS. Also try right-clicking this file in the Explorer while a <em>different</em>
+        file is the active editor tab, to confirm "Preview" acts on the file you clicked, not the
+        active one.
+    </div>
+
+    <script>
+        document.getElementById('js-marker').textContent = 'script DID run';
+    </script>
+</body>
+</html>
