@@ -2,7 +2,7 @@
     "name": "live-html-previewer",
     "displayName": "Live HTML Previewer",
     "description": "Live, side-by-side HTML preview in VS Code - for hand-written pages and AI-generated HTML reports alike",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "publisher": "hdg",
     "author": "Harshdeep Gupta",
     "engines": {
