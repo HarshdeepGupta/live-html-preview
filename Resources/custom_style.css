@@ -1,17 +1,4 @@
- /* * {
-    color: inherit;
-    background: inherit;
-    font-family: inherit;
-    font-size: inherit;
-}  */
-
-html,
-body {
-    background: #fff;
-    color: #000;
-}
-
-/* img {
-    max-width: inherit;
-    max-height: inherit;
-} */
+/* Bundled default for liveHtmlPreview.customCss.path (used when that setting
+   is empty). Add your own rules here, or point customCss.path at a different
+   file. Empty by default - light/dark forcing is handled separately by the
+   liveHtmlPreview.previewTheme setting, not by this stylesheet. */

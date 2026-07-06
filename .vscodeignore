@@ -1,9 +1,13 @@
 .vscode/**
-typings/**
-out/test/**
+.claude/**
+out/**
 test/**
 src/**
+node_modules/**
 **/*.map
 .gitignore
 tsconfig.json
+esbuild.js
 vsc-extension-quickstart.md
+MODERNIZATION.md
+preview-test.html
