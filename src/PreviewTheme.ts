@@ -29,8 +29,3 @@ export function cycleTheme(): Thenable<void> {
 export function isThemeChange(e: vscode.ConfigurationChangeEvent): boolean {
     return e.affectsConfiguration(`${Constants.Configuration.SECTION}.${Constants.Configuration.PREVIEW_THEME}`);
 }
-
-// Refreshes the context key the right-click submenu's checkmarks are bound to.
-export function syncContextKey(): Thenable<unknown> {
-    return vscode.commands.executeCommand('setContext', Constants.ExtensionConstants.PREVIEW_THEME_CONTEXT_KEY, getTheme());
-}

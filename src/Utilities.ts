@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import PreviewManager from './PreviewManager'
 import * as Constants from './Constants'
+import PreviewPanelRegistry, { PreviewMode } from './PreviewPanelRegistry'
 
 // Local resources the preview webview is allowed to load: the document's own
 // directory, the extension's own assets (bundled custom_style.css), and any
@@ -19,11 +20,13 @@ export function buildLocalResourceRoots(document: vscode.TextDocument): vscode.U
 
 export default class Utilities {
 
-    private _panels: Map<string, vscode.WebviewPanel> = new Map();
-
-    // Notified whenever a preview panel this instance opens gains/loses focus,
-    // so the status bar can stay visible/accurate while a preview is active.
-    constructor(private _onPreviewPanelViewStateChange?: (active: boolean) => void) {}
+    // Notified whenever the set of active preview panels may have changed
+    // (registered via PreviewPanelRegistry), so the status bar can stay
+    // visible/accurate while any preview is focused.
+    constructor(
+        private _registry: PreviewPanelRegistry = new PreviewPanelRegistry(),
+        private _onPanelStateChange?: () => void
+    ) {}
 
     // Status-bar visibility check only: synchronous, always reflects the
     // currently active editor (never a menu-supplied uri).
@@ -40,9 +43,19 @@ export default class Utilities {
     // Resolves the document a command should act on: the uri VS Code passes
     // when a command is invoked from explorer/context (right-clicking a file
     // that may not be the active editor), falling back to the active editor
-    // for keybindings/Command Palette/editor-title invocations.
+    // for keybindings/Command Palette/editor-title invocations. Any failure
+    // to open the uri (deleted/renamed/unreadable file) is caught here so it
+    // never becomes an unhandled rejection at a command call site.
     async resolveHtmlDocument(uri: vscode.Uri | undefined, showWarning: boolean): Promise<vscode.TextDocument | undefined> {
-        const document = uri ? await vscode.workspace.openTextDocument(uri) : vscode.window.activeTextEditor?.document;
+        let document: vscode.TextDocument | undefined;
+        try {
+            document = uri ? await vscode.workspace.openTextDocument(uri) : vscode.window.activeTextEditor?.document;
+        } catch {
+            if (showWarning) {
+                vscode.window.showErrorMessage(`Live HTML Preview: couldn't open ${uri?.fsPath ?? "the file"}.`);
+            }
+            return undefined;
+        }
         if (!document || document.languageId.toLowerCase() !== "html") {
             if (showWarning) { vscode.window.showInformationMessage(Constants.ErrorMessages.NO_HTML); }
             return undefined;
@@ -50,14 +63,14 @@ export default class Utilities {
         return document;
     }
 
-    async init(viewColumn: vscode.ViewColumn, context: vscode.ExtensionContext, uri?: vscode.Uri) {
+    async init(viewColumn: vscode.ViewColumn, mode: PreviewMode, uri?: vscode.Uri) {
         const document = await this.resolveHtmlDocument(uri, true);
         if (!document) { return; }
 
-        const docKey = document.uri.toString();
-
-        // Reveal existing panel instead of opening a duplicate
-        const existing = this._panels.get(docKey);
+        // Reveal an existing panel for this exact mode, or a custom-editor
+        // preview (which already shows this document live), instead of
+        // opening a redundant duplicate.
+        const existing = this._registry.get(document.uri, mode) ?? this._registry.get(document.uri, 'custom');
         if (existing) {
             existing.reveal(viewColumn);
             return;
@@ -78,14 +91,7 @@ export default class Utilities {
             }
         );
 
-        this._panels.set(docKey, panel);
-        panel.onDidDispose(() => this._panels.delete(docKey), null, context.subscriptions);
-        panel.onDidChangeViewState(
-            e => this._onPreviewPanelViewStateChange?.(e.webviewPanel.active),
-            null,
-            context.subscriptions
-        );
-
+        this._registry.register(document.uri, mode, panel, this._onPanelStateChange);
         new PreviewManager(panel, document);
     }
 }

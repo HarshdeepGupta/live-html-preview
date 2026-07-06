@@ -5,9 +5,6 @@ export module ErrorMessages {
 export module ExtensionConstants {
     export const EXTENSION_ID = "hdg.live-html-previewer";
     export const CUSTOM_CSS_PATH = "Resources/custom_style.css";
-    // Drives the right-click submenu's checkmarks (contributes.menus "toggled"
-    // expressions in package.json); kept in sync with the previewTheme setting.
-    export const PREVIEW_THEME_CONTEXT_KEY = "liveHtmlPreview.theme";
 }
 
 export module Configuration {

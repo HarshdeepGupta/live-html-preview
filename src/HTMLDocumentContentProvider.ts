@@ -8,6 +8,12 @@ export default class HTMLDocumentContentProvider {
 
     private _document: vscode.TextDocument;
     private _webview: vscode.Webview;
+    // Caches the (expensive, whole-document-regex) link-rewritten body keyed
+    // by document version, so a re-render triggered by a config-only change
+    // (theme/customCss toggle) doesn't redundantly re-run it - only the two
+    // appended style/link lines actually depend on that kind of change.
+    private _cachedBody: string | undefined;
+    private _cachedVersion: number | undefined;
 
     constructor(document: vscode.TextDocument, webview: vscode.Webview) {
         this._document = document;
@@ -15,17 +21,22 @@ export default class HTMLDocumentContentProvider {
     }
 
     generateHTML(): string {
-        const plainText = this._document.getText();
-        const html = this.fixLinks(plainText);
-        return this.addStyles(html);
+        if (this._cachedVersion !== this._document.version) {
+            this._cachedBody = this.fixLinks(this._document.getText());
+            this._cachedVersion = this._document.version;
+        }
+        return this.addStyles(this._cachedBody!);
     }
 
     // Rewrite relative src/href attributes to webview-safe URIs so local
     // images, scripts, and stylesheets load inside the sandboxed webview.
+    // Leaves in-page anchors (#section), mailto:, and tel: links untouched -
+    // they aren't filesystem paths and would otherwise be corrupted into
+    // broken webview-resource URIs.
     private fixLinks(html: string): string {
         const documentFileName = this._document.fileName;
         return html.replace(
-            new RegExp("((?:src|href)=['\"])((?!https?:|//|data:|\\/).*?)(['\"])", "gmi"),
+            new RegExp("((?:src|href)=['\"])((?!https?:|//|data:|#|mailto:|tel:|\\/).*?)(['\"])", "gmi"),
             (_match: string, p1: string, p2: string, p3: string): string => {
                 const absPath = path.join(path.dirname(documentFileName), p2);
                 const uri = this._webview.asWebviewUri(vscode.Uri.file(absPath));

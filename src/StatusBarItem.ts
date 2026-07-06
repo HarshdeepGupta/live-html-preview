@@ -10,11 +10,13 @@ export default class StatusBarItem {
     private _previewItem: vscode.StatusBarItem;
     private _themeItem: vscode.StatusBarItem;
     private _utilities: Utilities;
-    // True while a live preview panel (side/full/custom editor) is the focused
-    // editor. activeTextEditor alone isn't a reliable signal here - VS Code
-    // just retains its previous value while a webview has focus - so preview
-    // panels report their own focus explicitly via setPreviewPanelActive().
-    private _isPreviewPanelActive = false;
+    // Queried fresh on every refresh instead of tracked as a pushed boolean:
+    // activeTextEditor alone isn't a reliable signal for "a preview panel is
+    // focused" (VS Code just retains its previous value while a webview has
+    // focus), but re-deriving "is any tracked panel currently active" from
+    // PreviewPanelRegistry on demand can't go stale the way a push-based flag
+    // could (e.g. never reset when the focused panel is closed).
+    private _isPreviewPanelActive: () => boolean = () => false;
 
     constructor(utilities?: Utilities) {
         this._utilities = utilities ?? new Utilities();
@@ -32,7 +34,7 @@ export default class StatusBarItem {
 
     updateStatusbar() {
         const isHtml = !!vscode.window.activeTextEditor && this._utilities.checkDocumentIsHTML(false);
-        if (!isHtml && !this._isPreviewPanelActive) {
+        if (!isHtml && !this._isPreviewPanelActive()) {
             this._previewItem.hide();
             this._themeItem.hide();
             return;
@@ -43,12 +45,12 @@ export default class StatusBarItem {
         this._themeItem.show();
     }
 
-    // Called from each preview panel's onDidChangeViewState, so the status bar
-    // (the one place the active theme is shown) stays visible whenever a
-    // preview is focused - not just when its source .html editor is.
-    setPreviewPanelActive(active: boolean) {
-        this._isPreviewPanelActive = active;
-        this.updateStatusbar();
+    // Called once with a query function (PreviewPanelRegistry.hasActivePanel)
+    // that's re-evaluated on every refresh, so the status bar (the one place
+    // the active theme is shown) stays accurate whenever any preview panel is
+    // focused or closed - not just when its source .html editor is.
+    setPreviewPanelActiveQuery(query: () => boolean) {
+        this._isPreviewPanelActive = query;
     }
 
     // Called whenever liveHtmlPreview.previewTheme changes, from any surface

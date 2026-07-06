@@ -3,45 +3,48 @@ import * as vscode from 'vscode';
 import Utilities from './Utilities'
 import StatusBarItem from './StatusBarItem'
 import HTMLPreviewCustomEditorProvider from './HTMLPreviewCustomEditorProvider'
+import PreviewPanelRegistry, { PreviewMode } from './PreviewPanelRegistry'
 import * as Constants from './Constants'
 import * as PreviewTheme from './PreviewTheme'
 
 export function activate(context: vscode.ExtensionContext) {
 
     const statusBarItem = new StatusBarItem();
-    statusBarItem.updateStatusbar();
     context.subscriptions.push(statusBarItem);
 
-    const onPreviewPanelViewStateChange = (active: boolean) => statusBarItem.setPreviewPanelActive(active);
-    const utilities = new Utilities(onPreviewPanelViewStateChange);
+    // One registry shared by every way a preview can be opened (side/full
+    // panels via Utilities, or "Reopen Editor With..." via
+    // HTMLPreviewCustomEditorProvider), so they can see each other's open
+    // panels instead of each tracking their own in isolation. The status bar
+    // re-queries hasActivePanel() fresh on every registry event instead of
+    // tracking a separately-pushed boolean, so it can't go stale on close.
+    const registry = new PreviewPanelRegistry();
+    statusBarItem.setPreviewPanelActiveQuery(() => registry.hasActivePanel());
+    const refreshStatusBar = () => statusBarItem.updateStatusbar();
+    const utilities = new Utilities(registry, refreshStatusBar);
 
-    context.subscriptions.push(HTMLPreviewCustomEditorProvider.register(onPreviewPanelViewStateChange));
+    context.subscriptions.push(HTMLPreviewCustomEditorProvider.register(registry, refreshStatusBar));
 
+    statusBarItem.updateStatusbar();
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(statusBarItem.updateStatusbar, statusBarItem)
     );
 
-    // Single reactive sync point: whichever surface changes the theme (cycle
-    // icon, submenu, status bar, or a direct settings.json edit), the context
-    // key (submenu checkmarks) and status bar text refresh from here.
-    PreviewTheme.syncContextKey();
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration((e) => {
-            if (!PreviewTheme.isThemeChange(e)) { return; }
-            PreviewTheme.syncContextKey();
-            statusBarItem.refreshThemeItem();
+            if (PreviewTheme.isThemeChange(e)) { statusBarItem.refreshThemeItem(); }
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.sidePreview', (uri?: vscode.Uri) => {
-            utilities.init(vscode.ViewColumn.Two, context, uri);
+            utilities.init(vscode.ViewColumn.Two, 'side', uri);
         })
     );
 
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.fullPreview', (uri?: vscode.Uri) => {
-            utilities.init(vscode.ViewColumn.One, context, uri);
+            utilities.init(vscode.ViewColumn.One, 'full', uri);
         })
     );
 
@@ -81,7 +84,8 @@ export function activate(context: vscode.ExtensionContext) {
                 { label: "Light", description: "Force white background / black text", value: Constants.PreviewTheme.LIGHT },
                 { label: "Dark", description: "Force black background / white text", value: Constants.PreviewTheme.DARK }
             ];
-            options.find(o => o.value === current)!.description += " (current)";
+            const currentOption = options.find(o => o.value === current);
+            if (currentOption) { currentOption.description += " (current)"; }
 
             const pick = await vscode.window.showQuickPick(options, { placeHolder: "Select a preview theme" });
             if (!pick) { return; }
@@ -98,28 +102,23 @@ export function activate(context: vscode.ExtensionContext) {
     // (global, so it also re-renders any already-open preview instantly) and
     // opens/reveals the requested view - one click starts a preview in a
     // specific mode instead of needing to set the theme first separately.
-    const openPreviewWithTheme = async (viewColumn: vscode.ViewColumn, theme: string, uri?: vscode.Uri) => {
+    const openPreviewWithTheme = async (viewColumn: vscode.ViewColumn, mode: PreviewMode, theme: string, uri?: vscode.Uri) => {
         await PreviewTheme.setTheme(theme);
-        utilities.init(viewColumn, context, uri);
+        utilities.init(viewColumn, mode, uri);
     };
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.sidePreviewAuto', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.Two, Constants.PreviewTheme.AUTO, uri))
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.sidePreviewLight', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.Two, Constants.PreviewTheme.LIGHT, uri))
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.sidePreviewDark', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.Two, Constants.PreviewTheme.DARK, uri))
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.fullPreviewAuto', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.One, Constants.PreviewTheme.AUTO, uri))
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.fullPreviewLight', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.One, Constants.PreviewTheme.LIGHT, uri))
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.fullPreviewDark', (uri?: vscode.Uri) => openPreviewWithTheme(vscode.ViewColumn.One, Constants.PreviewTheme.DARK, uri))
-    );
+    const PREVIEW_THEME_COMMANDS: { id: string; viewColumn: vscode.ViewColumn; mode: PreviewMode; theme: string }[] = [
+        { id: 'sidePreviewAuto', viewColumn: vscode.ViewColumn.Two, mode: 'side', theme: Constants.PreviewTheme.AUTO },
+        { id: 'sidePreviewLight', viewColumn: vscode.ViewColumn.Two, mode: 'side', theme: Constants.PreviewTheme.LIGHT },
+        { id: 'sidePreviewDark', viewColumn: vscode.ViewColumn.Two, mode: 'side', theme: Constants.PreviewTheme.DARK },
+        { id: 'fullPreviewAuto', viewColumn: vscode.ViewColumn.One, mode: 'full', theme: Constants.PreviewTheme.AUTO },
+        { id: 'fullPreviewLight', viewColumn: vscode.ViewColumn.One, mode: 'full', theme: Constants.PreviewTheme.LIGHT },
+        { id: 'fullPreviewDark', viewColumn: vscode.ViewColumn.One, mode: 'full', theme: Constants.PreviewTheme.DARK }
+    ];
+    for (const { id, viewColumn, mode, theme } of PREVIEW_THEME_COMMANDS) {
+        context.subscriptions.push(
+            vscode.commands.registerCommand(`extension.${id}`, (uri?: vscode.Uri) => openPreviewWithTheme(viewColumn, mode, theme, uri))
+        );
+    }
 }
 
 export function deactivate() {}

@@ -7,8 +7,8 @@ This extension allows you to preview your html files in VS Code itself. Use it t
 #### Full page preview
 #### Open html file in browser
 ### Usage
-* For side preview, use the keybinding 'ctrl+q s', press 'F1' and type "Show side preview", or click the preview icon in the editor tab toolbar
-* For full preview, use the keybinding 'ctrl+q f', press 'F1' and type "Show full preview", or alt-click the preview icon
+* For side preview, use the keybinding 'ctrl+q s', or press 'F1' and type "Show side preview", or click the preview icon in the editor tab toolbar
+* For full preview, use the keybinding 'ctrl+q f', or press 'F1' and type "Show full preview", or alt-click the preview icon
 * You can also right-click an .html file's tab and choose "Reopen Editor With..." -> "Live HTML Preview" to preview it in place
 * Right-click an .html file (in the editor or the Explorer) for a "Preview" submenu: Side Preview and Full Preview, each with Auto/Light/Dark, plus "Open in browser" - pick one to start a preview already in the mode you want, in one click
 * To open file in browser:

@@ -6,7 +6,7 @@
     "publisher": "hdg",
     "author": "Harshdeep Gupta",
     "engines": {
-        "vscode": "^1.73.0"
+        "vscode": "^1.85.0"
     },
     "categories": [
         "Other"
@@ -135,13 +135,34 @@
                 }
             ],
             "liveHtmlPreview.previewSubmenu": [
-                { "command": "extension.sidePreviewAuto", "group": "1_side" },
-                { "command": "extension.sidePreviewLight", "group": "1_side" },
-                { "command": "extension.sidePreviewDark", "group": "1_side" },
-                { "command": "extension.fullPreviewAuto", "group": "2_full" },
-                { "command": "extension.fullPreviewLight", "group": "2_full" },
-                { "command": "extension.fullPreviewDark", "group": "2_full" },
-                { "command": "extension.inBrowser", "group": "3_browser" }
+                {
+                    "command": "extension.sidePreviewAuto",
+                    "group": "1_side"
+                },
+                {
+                    "command": "extension.sidePreviewLight",
+                    "group": "1_side"
+                },
+                {
+                    "command": "extension.sidePreviewDark",
+                    "group": "1_side"
+                },
+                {
+                    "command": "extension.fullPreviewAuto",
+                    "group": "2_full"
+                },
+                {
+                    "command": "extension.fullPreviewLight",
+                    "group": "2_full"
+                },
+                {
+                    "command": "extension.fullPreviewDark",
+                    "group": "2_full"
+                },
+                {
+                    "command": "extension.inBrowser",
+                    "group": "3_browser"
+                }
             ]
         },
         "keybindings": [
@@ -204,7 +225,11 @@
                 },
                 "liveHtmlPreview.previewTheme": {
                     "type": "string",
-                    "enum": ["auto", "light", "dark"],
+                    "enum": [
+                        "auto",
+                        "light",
+                        "dark"
+                    ],
                     "enumDescriptions": [
                         "Show the page exactly as authored - its own styles (including any dark-mode CSS) win, like a real browser.",
                         "Force a plain white background and black text, regardless of the page's own styling.",
@@ -226,10 +251,10 @@
         "package": "npm run check-types && node esbuild.js --production"
     },
     "devDependencies": {
-        "@types/vscode": "^1.73.0",
         "@types/node": "^16.0.0",
-        "typescript": "^5.0.0",
+        "@types/vscode": "^1.85.0",
         "esbuild": "^0.28.0",
-        "npm-run-all": "^4.1.5"
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.0.0"
     }
 }
