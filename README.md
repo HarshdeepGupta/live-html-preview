@@ -1,5 +1,5 @@
 # Live HTML Previewer
-This extension allows you to preview your html files in VS Code itself. Use it to quickly set the html and css right for your webpages.
+Live, side-by-side preview of HTML files right inside VS Code - no browser tab, no context switch. Use it to quickly get the HTML and CSS right for hand-written webpages, and just as handy now that AI coding agents increasingly produce HTML (reports, specs, code reviews) instead of Markdown.
 ##### Note: Javascript is not supported in preview
 ### Features
 #### Side preview with live editing

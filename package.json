@@ -1,7 +1,7 @@
 {
     "name": "live-html-previewer",
     "displayName": "Live HTML Previewer",
-    "description": "Edit and preview HTML documents in VS Code",
+    "description": "Live, side-by-side HTML preview in VS Code - for hand-written pages and AI-generated HTML reports alike",
     "version": "0.3.0",
     "publisher": "hdg",
     "author": "Harshdeep Gupta",
@@ -15,6 +15,12 @@
         "html",
         "css",
         "preview",
+        "live preview",
+        "html preview",
+        "html viewer",
+        "webview",
+        "ai generated html",
+        "hot reload",
         "vscode"
     ],
     "galleryBanner": {
